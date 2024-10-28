@@ -14,6 +14,9 @@ import { AuthenticationGuard } from './authentication/guards/authentication/auth
 import { RefreshTokenIdsStorage } from './authentication/refresh-token-ids.storage';
 import { RolesGuard } from './authorization/guards/roles/roles.guard';
 import { PermissionsGuard } from './authorization/guards/permissions/permissions.guard';
+import { PolicyHandlerStorage } from './authorization/policies/policy-handler.storage';
+import { ValidUserPolicyHandler } from './authorization/policies/valid-user.policy';
+import { PoliciesGuard } from './authorization/guards/policies/policies.guard';
 
 @Module({
   imports: [
@@ -40,16 +43,26 @@ import { PermissionsGuard } from './authorization/guards/permissions/permissions
     //   provide: APP_GUARD,
     //   useClass: RolesGuard
     // },
-    // We're using role based authentication for now. No don't need this.
+    // We're using role based authorization for now. No don't need this.
     // Typically we only go with either role wise or claim wise authorization.
     // {
     //   provide: APP_GUARD,
     //   useClass: PermissionsGuard
     // },
+
+    // Guard for policy baesd authorization.
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: PoliciesGuard
+    // },
+
     AccessTokenGuard,
     // Need this so that the AccessTokenGuard is injectable to the AuthenticationGuard
     AuthenticationService,
-    RefreshTokenIdsStorage
+    RefreshTokenIdsStorage,
+
+    PolicyHandlerStorage,
+    ValidUserPolicyHandler
   ],
   controllers: [AuthenticationController]
 })

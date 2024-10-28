@@ -8,6 +8,8 @@ import { Roles } from 'src/iam/authorization/decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enum';
 import { Permission } from 'src/iam/authorization/permission.type';
 import { Permissions } from 'src/iam/authorization/decorators/permissions.decorator';
+import { Policies } from 'src/iam/authorization/decorators/policies.decotator';
+import { ValidUserPolicy } from 'src/iam/authorization/policies/valid-user.policy';
 
 @Controller('coffees')
 export class CoffeesController {
@@ -30,6 +32,8 @@ export class CoffeesController {
   @Roles(Role.Admin)
   // Instead of using role baesd authentication, we could intead go with claim based authorization like this
   // @Permissions(Permission.CreateCoffee)
+  // We can use policy based authorization as well
+  // @Policies(new ValidUserPolicy(), ...other_policies)
   @Get('test-role')
   testRole(@Param('id') id: string) {
     return "Role based authorization works!";

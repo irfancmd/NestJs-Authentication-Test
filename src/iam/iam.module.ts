@@ -17,10 +17,13 @@ import { PermissionsGuard } from './authorization/guards/permissions/permissions
 import { PolicyHandlerStorage } from './authorization/policies/policy-handler.storage';
 import { ValidUserPolicyHandler } from './authorization/policies/valid-user.policy';
 import { PoliciesGuard } from './authorization/guards/policies/policies.guard';
+import { ApiKeysService } from './authentication/api-keys.service';
+import { ApiKey } from 'src/users/api-keys/entities/api-key.entity/api-key.entity';
+import { ApiKeyGuard } from './authentication/guards/api-key/api-key.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, ApiKey]),
     // We're configuring the NestJS JwtModule using our configuration namespace
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig)
@@ -56,13 +59,18 @@ import { PoliciesGuard } from './authorization/guards/policies/policies.guard';
     //   useClass: PoliciesGuard
     // },
 
-    AccessTokenGuard,
     // Need this so that the AccessTokenGuard is injectable to the AuthenticationGuard
+    AccessTokenGuard,
+
+    // This is need if we want API key based authentication.
+    ApiKeyGuard,
+
     AuthenticationService,
     RefreshTokenIdsStorage,
 
     PolicyHandlerStorage,
-    ValidUserPolicyHandler
+    ValidUserPolicyHandler,
+    ApiKeysService
   ],
   controllers: [AuthenticationController]
 })

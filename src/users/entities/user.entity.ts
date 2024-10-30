@@ -11,7 +11,8 @@ export class User {
     @Column({ unique: true })
     email: string;
 
-    @Column()
+    // Users who use google authentication won't need a password. Hence it's nullable.
+    @Column({ nullable: true })
     password: string;
 
     @Column({ enum: Role, default: Role.Regular })
@@ -30,4 +31,6 @@ export class User {
     @Column({ enum: Permission, default: [], type: 'json' })
     permissions: PermissionType[];
 
+    @Column({ nullable: true })
+    googleId: string;
 }

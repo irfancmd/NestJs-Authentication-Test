@@ -33,4 +33,10 @@ export class User {
 
     @Column({ nullable: true })
     googleId: string;
+
+    @Column({ nullable: true })
+    isTfaEnabled: boolean;
+
+    @Column({ nullable: true })
+    tfaSecret: string;
 }

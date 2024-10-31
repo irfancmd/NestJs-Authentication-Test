@@ -12,6 +12,7 @@ import { ActiveUserData } from '../interfaces/active-user-data.interface';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { InvalidatedRefreshTokenError, RefreshTokenIdsStorage } from './refresh-token-ids.storage';
 import { randomUUID } from 'crypto';
+import { OtpAuthenticationService } from './otp-authentication.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -22,7 +23,8 @@ export class AuthenticationService {
         private readonly hashingService: HashingService,
         private readonly jwtService: JwtService,
         @Inject(jwtConfig.KEY) private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
-        private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage
+        private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
+        private readonly otpAuthService: OtpAuthenticationService
     ) { }
 
     async signUp(signUpDto: SignUpDto) {
@@ -63,6 +65,17 @@ export class AuthenticationService {
         //     { email: user.email }
         // );
 
+        if (user.isTfaEnabled) {
+            const isValid = this.otpAuthService.verifyCode(
+                signInDto.tfaCode,
+                user.tfaSecret
+            );
+
+            if (!isValid) {
+                throw new UnauthorizedException('Invalid 2FA code');
+            }
+        }
+
         return await this.generateTokens(user);
     }
 
@@ -75,8 +88,8 @@ export class AuthenticationService {
                 user.id,
                 this.jwtConfiguration.accessTokenTtl,
                 {
-                    email: user.email, 
-                    role: user.role, 
+                    email: user.email,
+                    role: user.role,
                     // Just for demonstration. Passing large arrays in jwt payload
                     // is not a good idea.
                     // We're using roles, so we don't need claim based authentication field "permission".
@@ -120,7 +133,7 @@ export class AuthenticationService {
             // called "Refresh Token Rotation".
             const isRefreshTokenValid = await this.refreshTokenIdsStorage.validate(user.id, refreshTokenId);
 
-            if(!isRefreshTokenValid) {
+            if (!isRefreshTokenValid) {
                 // Invalidate the old refresh token, since we're generating a new one.
                 await this.refreshTokenIdsStorage.invalidate(user.id);
             } else {
@@ -131,7 +144,7 @@ export class AuthenticationService {
             // may choose to omit the access token and sned only the refresh token instead.
             return this.generateTokens(user);
         } catch (err) {
-            if(err instanceof InvalidatedRefreshTokenError) {
+            if (err instanceof InvalidatedRefreshTokenError) {
                 throw new UnauthorizedException('Access Denied');
             }
 
